@@ -9,34 +9,32 @@ Interactive PowerShell tool for bulk device cleanup across Windows Autopilot, Mi
 
 ## 📸 Screenshots
 
-| Device Selection Grid | Device Verification | Removal Monitoring |
-|:---:|:---:|:---:|
-| ![GUI](Images/GUI.png) | ![Device Verification](Images/Device-Verification.png) | ![Removal Verification](Images/Removal-Verficiation.png) |
-| WPF grid with search & multi-select | Serial number validation & action menu | Real-time removal progress tracking |
+| Device Selection Grid | Device Verification | Removal Monitoring | Single Device Removal |
+|:---:|:---:|:---:|:---:|
+| ![GUI](Images/GUI.png) | ![Device Verification](Images/Device-Verification.png) | ![Removal Verification](Images/Removal-Verficiation.png) | ![Single Device](Images/Single-Device.png) |
+| WPF grid with search & multi-select | Serial number validation & action menu | Real-time removal progress tracking | Direct serial number targeting |
 
 ## ✨ Features
 
 - 📦 **Automatic Module Installation** - Checks for required Microsoft Graph modules and prompts to install missing dependencies
-- 🖱️ **Interactive Device Selection** - Grid view interface to select devices for removal
+- 🖱️ **Interactive Device Selection** - WPF grid view interface with search and multi-select
 - 🔄 **Multi-Service Cleanup** - Removes devices from all three services (Autopilot, Intune, and Entra ID)
 - 🔍 **Serial Number Validation** - Prevents accidental deletion of devices with duplicate names
-- 📊 **Real-Time Monitoring** - Tracks deletion progress with automatic verification
+- 🎯 **Direct Serial Number Targeting** - Target specific devices with `-SerialNumber` parameter, bypassing the WPF grid
+- 📊 **Real-Time Monitoring** - Tracks deletion progress with per-service progress bars and automatic verification
+- ⚡ **Parallel API Fetching** - Concurrent data retrieval on PowerShell 7+ using thread jobs
+- 🚀 **Fast Bulk Removal Mode** - Bulk removal without status checking, with results exported to CSV
+- 🔑 **Custom App Registration** - Configure a custom Entra app registration with persistent environment variables via `Configure-AutopilotCleanup` / `Clear-AutopilotCleanupConfig`
+- 🔄 **Automatic Update Check** - Checks PowerShell Gallery for newer versions on launch
+- 🏷️ **GroupTag Filtering** - Filter devices by GroupTag in the selection grid
 - 👥 **Duplicate Handling** - Identifies and processes duplicate device entries
 - 🧪 **WhatIf Mode** - Preview deletions without making actual changes
 - ⚙️ **Edge Case Management** - Handles pending deletions, missing devices, and other scenarios
 - 🔔 **Sound Notifications** - Plays success beeps when cleanup is complete
 
-## ✨ New Features
-
-- 🔑 **Custom App Registration** - Configure a custom Entra app registration with persistent environment variables via `Configure-AutopilotCleanup` / `Clear-AutopilotCleanupConfig`
-- 🚀 **Start-AutopilotCleanup** - Module entry point command, just like `Start-EntraPIM` — run after `Import-Module AutopilotCleanup`
-- 🔄 **Automatic Update Check** - Checks PowerShell Gallery for newer versions on launch (supports both `Update-Module` and `Update-PSResource`)
-- 🚀 **Fast Bulk Removal Mode** - Supports bulk removal **without status checking**, with results exported to a **CSV** for review
-- 🏷️ **GroupTag Filtering in Out Grid View** - Out-GridView device selection now supports **filtering by GroupTag**
-
 ## 📋 Prerequisites
 
-- PowerShell 5.1 or later
+- PowerShell 7.0 or later
 - Required module (auto-installed if missing):
   - `Microsoft.Graph.Authentication`
 
@@ -127,6 +125,7 @@ Preview what would be deleted without making actual changes:
 | `-WhatIf` | Switch | No | Preview mode - shows what would be deleted without performing actual deletions |
 | `-ClientId` | String | No | Client ID of a custom app registration for delegated auth |
 | `-TenantId` | String | No | Tenant ID to use with the custom app registration |
+| `-SerialNumber` | String[] | No | One or more serial numbers to target directly, bypasses the WPF grid |
 
 ## 🔧 How It Works
 
@@ -171,7 +170,7 @@ The Out-GridView displays the following information:
 ## 📺 Example Output
 
 ```
-[ A U T O P I L O T   C L E A N U P ]  v2.0.0
+[ A U T O P I L O T   C L E A N U P ]  v2.2.4
     with PowerShell
 
 Auth: Default Microsoft Graph (delegated)
@@ -244,18 +243,43 @@ Step 3: Removing from Entra ID...
 
 ## 📜 Version History
 
-**Version 2.1**
+**Version 2.2.4**
+- Minimum PowerShell version updated to 7.0
+- README updates: consolidated features list, updated version history and example output
+
+**Version 2.2.3**
+- Targeted API queries for `-SerialNumber` (no longer fetches entire tenant)
+- WPF grid performance improvements (UI virtualization, CollectionView filtering, search debounce)
+
+**Version 2.2.2**
+- Fix `SerialNumber` parameter variable collision causing type conversion errors during device removal
+
+**Version 2.2.1**
+- Per-service progress bars during parallel fetch (page count and record count per service)
+- Terminal indication when WPF device selection window is open
+- Shared concurrent progress tracker for real-time thread job monitoring
+
+**Version 2.2.0**
+- `-SerialNumber` parameter for direct device targeting (single or multiple), bypasses the WPF grid
+- Parallel API fetching on PowerShell 7+ using thread jobs (Autopilot, Intune, Entra ID fetched concurrently)
+- Automatic fallback to sequential fetch if parallel jobs fail
+- Progress bars during pagination for large tenant data retrieval
+
+**Version 2.1.0**
 - Custom app registration support (`Configure-AutopilotCleanup` / `Clear-AutopilotCleanupConfig`)
 - `Start-AutopilotCleanup` module entry point
 - Automatic update check from PowerShell Gallery
-- Cleaner console UI
+- Cleaner console UI - replaced heavy box-drawing with minimal section headers
 
-**Version 2.0**
-- Enhanced description and documentation
-- Automatic module installation with validation
-- Improved error handling
-- Better serial number validation
-- Real-time monitoring improvements
+**Version 2.0.0**
+- PowerShell module architecture (Public/Private function structure)
+- WPF device selection grid with search and multi-select
+- Fast bulk removal mode with CSV export
+- GroupTag filtering
+- Serial number validation
+- Real-time deletion monitoring
+- WhatIf mode
+- Automatic module installation
 
 ## 👨‍💻 Author
 
