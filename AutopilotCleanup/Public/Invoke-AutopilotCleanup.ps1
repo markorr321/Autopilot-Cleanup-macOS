@@ -11,6 +11,9 @@
         [string[]]$SerialNumber
     )
 
+    # Check for module updates
+    Test-ModuleUpdate
+
     # Main execution
     Clear-Host
 
@@ -681,7 +684,14 @@
 
             $autopilotRemoved = -not $deviceResult.Autopilot.Success
             $intuneRemoved = -not $deviceResult.Intune.Success
-            $entraRemoved = -not $deviceResult.EntraID.Success
+            # Entra ID removal is immediate - no polling needed
+            $entraRemoved = $true
+            if ($deviceResult.EntraID.Success) {
+                Write-ColorOutput "✓ Device removed from Entra ID" "Green"
+                $deviceResult.EntraID.Verified = $true
+            } elseif (-not $deviceResult.EntraID.Found) {
+                Write-ColorOutput "- Device not found in Entra ID (skipped)" "Gray"
+            }
 
 
             do {
@@ -725,25 +735,9 @@
                     }
                 }
 
-                # Check Entra ID status (after both Intune and Autopilot are removed)
-                if ($autopilotRemoved -and $intuneRemoved -and -not $entraRemoved) {
-                    Write-ColorOutput "Waiting for 1 of 1 to be removed from Entra ID (Elapsed: $elapsedMinutes min)" "Yellow"
-                    try {
-                        $entraDevices = Get-EntraDeviceByName -DeviceName $deviceName -SerialNumber $serialNumber -EntraDeviceId $entraDeviceId
-                        if (-not $entraDevices -or $entraDevices.Count -eq 0) {
-                            $entraRemoved = $true
-                            Write-ColorOutput "✓ Device removed from Entra ID" "Green"
-                            $deviceResult.EntraID.Verified = $true
-                        }
-                    }
-                    catch {
-                        Write-ColorOutput "  Error checking Entra ID: $($_.Exception.Message)" "Red"
-                    }
-                }
 
-
-                # Exit if all services are cleared
-                if ($autopilotRemoved -and $intuneRemoved -and $entraRemoved) {
+                # Exit if Intune and Autopilot are cleared (Entra ID is immediate, no polling)
+                if ($autopilotRemoved -and $intuneRemoved) {
                     $elapsedTime = [math]::Round(((Get-Date) - $startTime).TotalMinutes, 1)
 
                     # Get device ID from the original device data
