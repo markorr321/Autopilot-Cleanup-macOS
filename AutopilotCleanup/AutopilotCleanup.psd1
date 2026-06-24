@@ -1,14 +1,15 @@
 ﻿@{
     RootModule        = 'AutopilotCleanup.psm1'
-    ModuleVersion     = '2.2.4'
+    ModuleVersion     = '2.4.0'
     GUID              = '2c66f0a3-dcb1-4050-8913-142c0b2991cd'
     Author            = 'Mark Orr'
     CompanyName       = 'Orr365'
     Copyright         = '(c) 2025. All rights reserved.'
-    Description       = 'Bulk removal tool for devices from Windows Autopilot, Microsoft Intune, and Microsoft Entra ID. Features interactive WPF device selection grid, custom app registration support, automatic module installation, serial number validation, real-time deletion monitoring, fast bulk removal with CSV export, direct serial number targeting, parallel API fetching on PowerShell 7+, and WhatIf mode. Just run Start-AutopilotCleanup after importing.'
-    PowerShellVersion = '7.0'
+    Description       = 'Bulk removal tool for devices from Windows Autopilot, Microsoft Intune, and Microsoft Entra ID. Features a cross-platform GliderUI device selector, browser-based Microsoft Graph authentication, custom app registration support, automatic module installation, serial number validation, real-time deletion monitoring, fast bulk removal with CSV export, direct serial number targeting, parallel API fetching on PowerShell 7+, and WhatIf mode.'
+    CompatiblePSEditions = @('Core')
+    PowerShellVersion = '7.4'
 
-    # Note: Microsoft.Graph.Authentication is required at runtime but not enforced here
+    # Note: Microsoft.Graph.Authentication and GliderUI are required at runtime but not enforced here
     # to allow the module to load and handle installation interactively via Install-RequiredGraphModule
     RequiredModules   = @()
 
@@ -42,13 +43,25 @@
 
     PrivateData = @{
         PSData = @{
-            Tags = @('Autopilot', 'Intune', 'EntraID', 'DeviceManagement', 'Cleanup', 'MicrosoftGraph', 'Windows', 'Entra', 'DeviceCleanup')
+            Tags = @('Autopilot', 'Intune', 'EntraID', 'DeviceManagement', 'Cleanup', 'MicrosoftGraph', 'Windows', 'MacOS', 'Linux', 'Entra', 'DeviceCleanup', 'CrossPlatform', 'GliderUI', 'Avalonia')
 
             LicenseUri = 'https://github.com/markorr321/Autopilot-Cleanup/blob/main/LICENSE'
 
             ProjectUri = 'https://github.com/markorr321/Autopilot-Cleanup'
 
             ReleaseNotes = @'
+## 2.4.0
+- Switched default Microsoft Graph sign-in to browser-based authentication with account selection
+- Browser auth now mirrors Entra-PIM by using MSAL and a system browser redirect instead of reusing cached Graph contexts
+- Default auth no longer requires a TenantId; custom TenantId is only used when explicitly configured
+
+## 2.3.0
+- Cross-platform GliderUI device selector replaces the Windows-only WPF grid
+- GliderUI added as a runtime dependency for interactive selection
+- Module minimum PowerShell version updated to 7.4 to match GliderUI
+- Start-AutopilotCleanup now has a real exported entry point
+- Added -ForceLogin for tenant-aware reauthentication
+
 ## 2.2.4
 - Minimum PowerShell version updated to 7.0
 - README updates: consolidated features list, updated version history and example output

@@ -60,8 +60,8 @@
     # Define required modules
     $requiredModules = @(
         'Microsoft.Graph.Authentication'
+        'GliderUI'
     )
-
     # Check and install required modules
     if (-not (Install-RequiredGraphModule -ModuleNames $requiredModules)) {
         Write-ColorOutput "Failed to install required modules. Exiting." "Red"
@@ -69,15 +69,12 @@
     }
     Write-ColorOutput ""
 
-    # Check if already connected to Graph
-    if (-not (Test-GraphConnection)) {
-        if (-not (Connect-AutopilotGraph)) {
-            Write-ColorOutput "Failed to connect to Microsoft Graph. Exiting." "Red"
-            return
-        }
+    if (-not (Connect-AutopilotGraph)) {
+        Write-ColorOutput "Failed to connect to Microsoft Graph. Exiting." "Red"
+        return
     }
 
-    # Fetch device data - targeted queries for -SerialNumber, bulk fetch for WPF grid
+    # Fetch device data - targeted queries for -SerialNumber, bulk fetch for the selector UI
     $enrichedDevices = @()
 
     if ($SerialNumber -and $SerialNumber.Count -gt 0) {
@@ -179,7 +176,7 @@
         }
         Write-ColorOutput "Matched $($selectedDevices.Count) of $($SerialNumber.Count) serial number(s)" "Cyan"
     } else {
-        # Bulk fetch all devices for WPF grid selection
+        # Bulk fetch all devices for interactive selector
         $autopilotDevices = @()
         $allIntuneDevices = @()
         $allEntraDevices = @()

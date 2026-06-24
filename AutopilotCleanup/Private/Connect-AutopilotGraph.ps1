@@ -9,36 +9,57 @@
     )
 
     try {
-        # Suppress WAM warning by setting preference before connecting
-        $WarningPreference = 'SilentlyContinue'
-
-        # Build Connect-MgGraph parameters
-        $connectParams = @{
-            Scopes      = $requiredScopes
-            NoWelcome   = $true
-            ErrorAction = 'Stop'
+        try {
+            Disconnect-MgGraph -ErrorAction SilentlyContinue | Out-Null
+        }
+        catch {
+            # ignore stale context cleanup errors
         }
 
-        # Add custom app registration if configured
-        if (-not [string]::IsNullOrWhiteSpace($script:CustomClientId)) {
-            $connectParams['ClientId'] = $script:CustomClientId
+        if (-not $script:AutopilotCleanupMSALAssemblyPaths) {
+            $script:AutopilotCleanupMSALAssemblyPaths = @{}
         }
-        if (-not [string]::IsNullOrWhiteSpace($script:CustomTenantId)) {
-            $connectParams['TenantId'] = $script:CustomTenantId
+        if (-not $script:AutopilotCleanupMSALHelperCompiled) {
+            $script:AutopilotCleanupMSALHelperCompiled = $false
         }
 
-        Connect-MgGraph @connectParams | Out-Null
-        $WarningPreference = 'Continue'
+        if (-not (Initialize-AutopilotCleanupMSALAssemblies)) {
+            throw "Could not initialize browser authentication dependencies."
+        }
+        $null = Initialize-AutopilotCleanupMSALHelper
 
         if (-not [string]::IsNullOrWhiteSpace($script:CustomClientId)) {
-            Write-ColorOutput "✓ Successfully connected using custom app registration" "Green"
+            Write-ColorOutput "Using custom app registration..." "Cyan"
+            Write-ColorOutput "  Client ID: $($script:CustomClientId)" "Gray"
+            if (-not [string]::IsNullOrWhiteSpace($script:CustomTenantId)) {
+                Write-ColorOutput "  Tenant ID: $($script:CustomTenantId)" "Gray"
+            }
         } else {
-            Write-ColorOutput "✓ Successfully connected to Microsoft Graph" "Green"
+            Write-ColorOutput "Using default Microsoft Graph authentication..." "Cyan"
         }
-        return $true
+
+        Write-ColorOutput "Opening browser for authentication..." "Cyan"
+        Write-ColorOutput "Waiting for authentication response..." "Yellow"
+
+        $accessToken = Get-AutopilotCleanupBrowserAccessToken -Scopes $requiredScopes
+        if (-not $accessToken) {
+            throw "Failed to acquire browser access token."
+        }
+
+        Write-ColorOutput "Authentication successful, connecting to Graph..." "Cyan"
+        $secureToken = ConvertTo-SecureString $accessToken -AsPlainText -Force
+        Connect-MgGraph -AccessToken $secureToken -NoWelcome -ErrorAction Stop | Out-Null
+
+        $context = Get-MgContext -ErrorAction SilentlyContinue
+        if ($context) {
+            Write-ColorOutput "✓ Successfully connected to Microsoft Graph" "Green"
+            return $true
+        } else {
+            Write-ColorOutput "✗ Connection failed" "Red"
+            return $false
+        }
     }
     catch {
-        $WarningPreference = 'Continue'
         Write-ColorOutput "✗ Failed to connect to Microsoft Graph: $($_.Exception.Message)" "Red"
         return $false
     }
