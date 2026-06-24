@@ -56,7 +56,7 @@
 - Default auth no longer requires a TenantId; custom TenantId is only used when explicitly configured
 
 ## 2.3.0
-- Cross-platform GliderUI device selector replaces the Windows-only WPF grid
+- Cross-platform GliderUI device selector replaces the legacy desktop grid
 - GliderUI added as a runtime dependency for interactive selection
 - Module minimum PowerShell version updated to 7.4 to match GliderUI
 - Start-AutopilotCleanup now has a real exported entry point
@@ -68,18 +68,18 @@
 
 ## 2.2.3
 - Targeted API queries for -SerialNumber (no longer fetches entire tenant)
-- WPF grid performance improvements (UI virtualization, CollectionView filtering, search debounce)
+- Interactive selector performance improvements (UI virtualization, CollectionView filtering, search debounce)
 
 ## 2.2.2
 - Fix SerialNumber parameter variable collision causing type conversion errors during device removal
 
 ## 2.2.1
 - Per-service progress bars during parallel fetch (page count and record count per service)
-- Terminal indication when WPF device selection window is open
+- Terminal indication when the device selection window is open
 - Shared concurrent progress tracker for real-time thread job monitoring
 
 ## 2.2.0
-- -SerialNumber parameter for direct device targeting (single or multiple), bypasses the WPF grid
+- -SerialNumber parameter for direct device targeting (single or multiple), bypasses the interactive selector
 - Parallel API fetching on PowerShell 7+ using thread jobs (Autopilot, Intune, Entra ID fetched concurrently)
 - Automatic fallback to sequential fetch if parallel jobs fail
 - Progress bars during pagination for large tenant data retrieval
@@ -92,7 +92,7 @@
 
 ## 2.0.0
 - PowerShell module architecture (Public/Private function structure)
-- WPF device selection grid with search and multi-select
+- Interactive device selection grid with search and multi-select
 - Fast bulk removal mode with CSV export
 - GroupTag filtering
 - Serial number validation
